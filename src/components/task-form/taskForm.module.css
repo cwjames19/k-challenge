@@ -1,0 +1,36 @@
+.form__root {
+  display: flex;
+  flex-flow: column nowrap;
+  width: 540px;
+  gap: 16px;
+}
+
+.form__root label {
+  display: flex;
+  flex-flow: row nowrap;
+  width: 100%;
+}
+
+.form__root input {
+  flex: 1 1 auto;
+  margin-left: 16px;
+  padding: 4px;
+}
+
+.form__buttons {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  gap: 32px;
+}
+
+.form__buttons button {
+  border: 1px solid var(--black-1);
+  padding: 12px 24px;
+  border-radius: 4px;
+}
+
+.form__error {
+  margin: "auto";
+  color: var(--text-danger);
+}

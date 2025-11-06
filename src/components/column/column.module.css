@@ -1,0 +1,53 @@
+.column {
+  flex: 1 1 0px;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  max-height: 100%;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--blue-2);
+  border-radius: 4px;
+}
+
+.column__topRow {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.column__title {
+  flex: 0 0 auto;
+}
+
+.column__addButton {
+  border: 1px solid var(--black-1);
+  height: 28px;
+  width: 28px;
+  border-radius: 4px;
+}
+
+.column__cardContainer {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 8px;
+  width: 100%;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+@media screen and (max-width: 768px) {
+  .column {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .column__addButton {
+    height: 24px;
+    width: 24px;
+    border-radius: 4px;
+  }
+}
