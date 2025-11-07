@@ -17,7 +17,6 @@ const DbContext = createContext<DbContextState>({
   db: null,
   dbReady: false,
   createTask: () => Promise.resolve({} as Task),
-  getTasksByStatus: () => Promise.resolve([]),
 });
 
 const seedData: NewTask[] = [
@@ -25,19 +24,31 @@ const seedData: NewTask[] = [
     title: "Task One",
     description: "This is my first task",
     status: TaskStatus.TO_DO,
-    index: 1,
+    index: 0,
   },
   {
     title: "Task Two",
     description: "This is my second task",
     status: TaskStatus.TO_DO,
-    index: 2,
+    index: 1,
   },
   {
     title: "Task Three",
     description: "This is my third task",
     status: TaskStatus.IN_PROGRESS,
+    index: 0,
+  },
+  {
+    title: "Task Four",
+    description: "This is my fourth task",
+    status: TaskStatus.IN_PROGRESS,
     index: 1,
+  },
+  {
+    title: "Task Five",
+    description: "This is my fifth task",
+    status: TaskStatus.IN_PROGRESS,
+    index: 2,
   },
 ];
 
@@ -45,7 +56,7 @@ export const DbProvider: FC<PropsWithChildren> = ({ children }) => {
   const [db, setDb] = useState<IDBDatabase | null>(null);
 
   useEffect(() => {
-    const dbRequest = indexedDB.open(KANBAN_DB_NAME, 8);
+    const dbRequest = indexedDB.open(KANBAN_DB_NAME, 11);
 
     dbRequest.onupgradeneeded = function () {
       const newDb = this.result;
@@ -80,42 +91,6 @@ export const DbProvider: FC<PropsWithChildren> = ({ children }) => {
       console.error(dbRequest.error);
     };
   }, [setDb]);
-
-  const getTasksByStatus: (status: TaskStatus) => Promise<Task[]> = useCallback(
-    (status) => {
-      if (!db) {
-        return Promise.resolve([]);
-      }
-
-      return new Promise((resolve) => {
-        const tasks: Task[] = [];
-
-        const store = db.transaction("tasks", "readwrite").objectStore("tasks");
-        const index = store.index("status");
-
-        index.openCursor().onsuccess = (event) => {
-          // TS only recognizes parameter as a non-specific Event type
-          const cursor = (event.target as unknown as IDBRequest).result;
-
-          if (cursor) {
-            if (cursor.key === status) {
-              tasks.push(cursor.value);
-            }
-
-            cursor.continue();
-          } else {
-            resolve(tasks);
-          }
-        };
-
-        index.openCursor().onerror = () => {
-          console.error("Could not open cursor in getTasksByStatus");
-          resolve([]);
-        };
-      });
-    },
-    [db]
-  );
 
   const createTask: (title: string, description: string, status?: TaskStatus) => Promise<Task> = useCallback(
     async (title, description, status = TaskStatus.TO_DO) => {
@@ -182,9 +157,8 @@ export const DbProvider: FC<PropsWithChildren> = ({ children }) => {
       db,
       dbReady: !!db,
       createTask,
-      getTasksByStatus,
     }),
-    [db, createTask, getTasksByStatus]
+    [db, createTask]
   );
 
   return <DbContext.Provider value={value}>{children}</DbContext.Provider>;

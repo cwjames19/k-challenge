@@ -1,32 +1,27 @@
-import { useCallback, useEffect, useMemo, useState, type FC } from "react";
+import { useCallback, type FC } from "react";
 import type { Task, TaskStatus } from "../../types/general";
 import styles from "./column.module.css";
 import { Card } from "../card/Card";
 import { getTaskStatusString } from "../../lib/helpers";
 import { useModals } from "../../state/modal-context/ModalProvider";
-import { useDb } from "../../state/db-context/DbProvider";
 import { TaskForm } from "../task-form/TaskForm";
 
 export interface ColumnProps {
   status: TaskStatus;
+  tasks: Task[];
+  handleAddNewTask: (newTask: Task) => void;
+  handleDeleteTask: (id: number) => void;
+  activeTaskId?: number;
 }
 
-export const Column: FC<ColumnProps> = ({ status }) => {
-  const { pushModal, popModal } = useModals();
-  const { dbReady, getTasksByStatus } = useDb();
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  const handleAddNewTask = useCallback(
-    (newTask: Task) => {
-      setTasks((current) => [...current, newTask]);
-      popModal();
-    },
-    [popModal]
-  );
-
-  const handleDeleteTask = useCallback((id: number) => {
-    setTasks((current) => current.filter((task) => task.id !== id));
-  }, []);
+export const Column: FC<ColumnProps> = ({
+  status,
+  tasks,
+  handleAddNewTask,
+  handleDeleteTask,
+  activeTaskId,
+}) => {
+  const { pushModal } = useModals();
 
   const handleOpenCreateModal: () => void = useCallback(() => {
     pushModal({
@@ -35,20 +30,6 @@ export const Column: FC<ColumnProps> = ({ status }) => {
       content: <TaskForm initialStatus={status} onSuccess={handleAddNewTask} />,
     });
   }, [pushModal, status, handleAddNewTask]);
-
-  useEffect(() => {
-    const asyncGetTasks = async () => {
-      const newTasks = await getTasksByStatus(status);
-
-      setTasks(newTasks);
-    };
-
-    if (dbReady) {
-      asyncGetTasks();
-    }
-  }, [dbReady, getTasksByStatus, status]);
-
-  const sortedTasks = useMemo(() => tasks.sort((a, b) => (a.index < b.index ? -1 : 1)), [tasks]);
 
   return (
     <div className={styles.column}>
@@ -59,8 +40,8 @@ export const Column: FC<ColumnProps> = ({ status }) => {
         </button>
       </div>
       <div className={styles.column__cardContainer}>
-        {sortedTasks.map((task) => (
-          <Card key={task.id} task={task} onDelete={handleDeleteTask} />
+        {tasks.map((task) => (
+          <Card key={task.id} task={task} onDelete={handleDeleteTask} activeTaskId={activeTaskId} />
         ))}
       </div>
     </div>

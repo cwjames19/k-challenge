@@ -1,16 +1,54 @@
 .card {
   flex: 0 0 auto;
   display: flex;
-  flex-flow: column nowrap;
+  flex-flow: row nowrap;
   width: 100%;
-  padding: 16px;
-  border-radius: 4px;
+  padding: 0px;
+  margin: 0px;
 
-  /* temporary */
   height: auto;
   min-height: 100px;
   background-color: white;
   border: 1px solid var(--black-1);
+  border-radius: 4px;
+  overflow: clip;
+}
+
+.card__dragHandle {
+  flex: 0 0 16px;
+  height: 100%;
+  min-height: 100px;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--blue-8);
+  opacity: 0.3;
+  cursor: grab;
+}
+
+.card__dragHandle > div {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-between;
+  align-items: center;
+  width: auto;
+  height: 30px;
+}
+
+.card__dragHandle > div > div {
+  width: 4px;
+  height: 4px;
+  background-color: black;
+  border-radius: 50%;
+}
+
+.card__content {
+  flex: 1 1 0px;
+  display: flex;
+  flex-flow: column nowrap;
+  width: 100%;
+  padding: 16px;
 }
 
 .card__topRow {
