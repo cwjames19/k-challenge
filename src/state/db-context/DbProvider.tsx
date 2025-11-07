@@ -19,44 +19,11 @@ const DbContext = createContext<DbContextState>({
   createTask: () => Promise.resolve({} as Task),
 });
 
-const seedData: NewTask[] = [
-  {
-    title: "Task One",
-    description: "This is my first task",
-    status: TaskStatus.TO_DO,
-    index: 0,
-  },
-  {
-    title: "Task Two",
-    description: "This is my second task",
-    status: TaskStatus.TO_DO,
-    index: 1,
-  },
-  {
-    title: "Task Three",
-    description: "This is my third task",
-    status: TaskStatus.IN_PROGRESS,
-    index: 0,
-  },
-  {
-    title: "Task Four",
-    description: "This is my fourth task",
-    status: TaskStatus.IN_PROGRESS,
-    index: 1,
-  },
-  {
-    title: "Task Five",
-    description: "This is my fifth task",
-    status: TaskStatus.IN_PROGRESS,
-    index: 2,
-  },
-];
-
 export const DbProvider: FC<PropsWithChildren> = ({ children }) => {
   const [db, setDb] = useState<IDBDatabase | null>(null);
 
   useEffect(() => {
-    const dbRequest = indexedDB.open(KANBAN_DB_NAME, 12);
+    const dbRequest = indexedDB.open(KANBAN_DB_NAME, 13);
 
     dbRequest.onupgradeneeded = function () {
       const newDb = this.result;
@@ -67,13 +34,6 @@ export const DbProvider: FC<PropsWithChildren> = ({ children }) => {
         const taskObjectStore = newDb.createObjectStore("tasks", { keyPath: "id", autoIncrement: true });
 
         taskObjectStore.createIndex("status", "status", { unique: false });
-
-        taskObjectStore.transaction.oncomplete = () => {
-          const store = newDb.transaction("tasks", "readwrite").objectStore("tasks");
-          seedData.forEach((t) => {
-            store.add(t);
-          });
-        };
       }
     };
 
