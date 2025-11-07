@@ -24,6 +24,7 @@ export const Board: FC = () => {
   const { popModal } = useModals();
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [searchText, setSearchText] = useState<string>("");
   const sensors = useSensors(useSensor(PointerSensor));
 
   const getTasksByStatus = useCallback(
@@ -205,13 +206,31 @@ export const Board: FC = () => {
 
   const filteredTasks: Record<TaskStatus, { tasks: Task[]; sortedIds: number[] }> = useMemo(() => {
     const todo = allTasks
-      .filter(({ status }) => status === TaskStatus.TO_DO)
+      .filter(({ status, title, description }) => {
+        const satisfiesSearch =
+          !searchText ||
+          (Boolean(searchText) &&
+            (title.toLowerCase().includes(searchText) || description.toLowerCase().includes(searchText)));
+        return satisfiesSearch && status === TaskStatus.TO_DO;
+      })
       .sort((a, b) => (a.index < b.index ? -1 : 1));
     const inProgress = allTasks
-      .filter(({ status }) => status === TaskStatus.IN_PROGRESS)
+      .filter(({ status, title, description }) => {
+        const satisfiesSearch =
+          !searchText ||
+          (Boolean(searchText) &&
+            (title.toLowerCase().includes(searchText) || description.toLowerCase().includes(searchText)));
+        return satisfiesSearch && status === TaskStatus.IN_PROGRESS;
+      })
       .sort((a, b) => (a.index < b.index ? -1 : 1));
     const done = allTasks
-      .filter(({ status }) => status === TaskStatus.DONE)
+      .filter(({ status, title, description }) => {
+        const satisfiesSearch =
+          !searchText ||
+          (Boolean(searchText) &&
+            (title.toLowerCase().includes(searchText) || description.toLowerCase().includes(searchText)));
+        return satisfiesSearch && status === TaskStatus.DONE;
+      })
       .sort((a, b) => (a.index < b.index ? -1 : 1));
 
     return {
@@ -228,7 +247,8 @@ export const Board: FC = () => {
         sortedIds: done.map(({ id }) => id),
       },
     };
-  }, [allTasks]);
+  }, [allTasks, searchText]);
+
   const sortedAllIds = useMemo(
     () => [
       ...filteredTasks.TO_DO.sortedIds,
@@ -246,19 +266,32 @@ export const Board: FC = () => {
       onDragOver={handleDragOver}
       sensors={sensors}
     >
-      <div className={styles.board}>
-        <SortableContext items={sortedAllIds} strategy={verticalListSortingStrategy} key={status}>
-          {([TaskStatus.TO_DO, TaskStatus.IN_PROGRESS, TaskStatus.DONE] as TaskStatus[]).map((status) => (
-            <Column
-              status={status}
-              tasks={filteredTasks[status].tasks}
-              handleAddNewTask={handleAddNewTask}
-              handleDeleteTask={handleDeleteTask}
-              activeTask={activeTask ?? undefined}
-              key={status}
+      <div className={styles.board__wrapper}>
+        <div className={styles.board__inputContainer}>
+          <label>
+            <span>Search</span>
+            <input
+              value={searchText}
+              onInput={(e) => setSearchText(e.currentTarget.value.toLowerCase())}
+              name="search"
+              aria-label="search"
             />
-          ))}
-        </SortableContext>
+          </label>
+        </div>
+        <div className={styles.board}>
+          <SortableContext items={sortedAllIds} strategy={verticalListSortingStrategy} key={status}>
+            {([TaskStatus.TO_DO, TaskStatus.IN_PROGRESS, TaskStatus.DONE] as TaskStatus[]).map((status) => (
+              <Column
+                status={status}
+                tasks={filteredTasks[status].tasks}
+                handleAddNewTask={handleAddNewTask}
+                handleDeleteTask={handleDeleteTask}
+                activeTask={activeTask ?? undefined}
+                key={status}
+              />
+            ))}
+          </SortableContext>
+        </div>
       </div>
 
       <DragOverlay>
