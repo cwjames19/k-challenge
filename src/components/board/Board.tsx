@@ -31,13 +31,12 @@ export const Board: FC = () => {
     []
   );
 
-  const findTask: (id: unknown) => Task = useCallback(
+  const findTask: (id: unknown) => Task | null = useCallback(
     (id: unknown) => {
       const task = allTasks.find((task) => task.id === id);
 
       if (!task) {
-        // typically i would create better error handling than this
-        console.error(`Tasks with id, ${id} not found`);
+        return null;
       }
 
       return task!;
@@ -93,24 +92,42 @@ export const Board: FC = () => {
       const activeTask = findTask(event.active.id);
       const overTask = findTask(event.over.id);
 
-      if (!overTask || !activeTask || overTask.id === activeTask.id) {
+      if (
+        [TaskStatus.TO_DO, TaskStatus.IN_PROGRESS, TaskStatus.DONE].includes(event.over?.id as TaskStatus) &&
+        activeTask !== null
+      ) {
+        setAllTasks((current) =>
+          current.map((task) => ({
+            ...task,
+            status: task.id === activeTask?.id ? (event.over?.id as TaskStatus) : task.status,
+            index:
+              task.id === activeTask?.id
+                ? getTasksByStatus(allTasks, event.over?.id as TaskStatus).length
+                : task.index,
+          }))
+        );
+        setActiveTask({
+          ...activeTask!,
+          status: event.over?.id as TaskStatus,
+          index: getTasksByStatus(allTasks, event.over?.id as TaskStatus).length,
+        });
         return;
+      } else if (activeTask !== null && overTask !== null && activeTask.id !== overTask.id) {
+        setAllTasks((current) =>
+          current.map((task) => ({
+            ...task,
+            status: task.id === activeTask.id ? overTask.status : task.status,
+            index: task.id === activeTask.id ? overTask.index : task.index,
+          }))
+        );
+        setActiveTask({
+          ...activeTask,
+          status: overTask.status,
+          index: overTask.index,
+        });
       }
-
-      setAllTasks((current) =>
-        current.map((task) => ({
-          ...task,
-          status: task.id === activeTask.id ? overTask.status : task.status,
-          index: task.id === activeTask.id ? overTask.index : task.index,
-        }))
-      );
-      setActiveTask({
-        ...activeTask,
-        status: overTask.status,
-        index: overTask.index,
-      });
     },
-    [findTask]
+    [findTask, allTasks, getTasksByStatus]
   );
 
   const handleDragEnd: DndContextProps["onDragEnd"] = useCallback(
@@ -121,8 +138,11 @@ export const Board: FC = () => {
       }
       const activeTask = findTask(event.active.id);
       const overTask = findTask(event.over.id);
+      const isOverColumn = [TaskStatus.TO_DO, TaskStatus.IN_PROGRESS, TaskStatus.DONE].includes(
+        event.over?.id as TaskStatus
+      );
 
-      if (!overTask || !activeTask || overTask.id === activeTask.id) {
+      if ((overTask === null && !isOverColumn) || activeTask?.id === overTask?.id) {
         setActiveTask(null);
         return;
       }
@@ -234,7 +254,8 @@ export const Board: FC = () => {
               tasks={filteredTasks[status].tasks}
               handleAddNewTask={handleAddNewTask}
               handleDeleteTask={handleDeleteTask}
-              activeTaskId={activeTask?.id}
+              activeTask={activeTask ?? undefined}
+              key={status}
             />
           ))}
         </SortableContext>

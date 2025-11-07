@@ -12,16 +12,16 @@ export interface CardProps {
   task: Task;
   onDelete: (id: number) => void;
   isOverlay?: boolean;
-  activeTaskId?: number;
+  activeTask?: Task;
 }
 
-export const Card: FC<CardProps> = ({ task, onDelete, isOverlay = false, activeTaskId }) => {
+export const Card: FC<CardProps> = ({ task, onDelete, isOverlay = false, activeTask }) => {
   const { db, dbReady } = useDb();
   const [editing, setEditing] = useState<boolean>(false);
   const titleRef = useRef<HTMLParagraphElement | null>(null);
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
 
-  const opacity = activeTaskId === task.id ? (isOverlay ? 0.8 : 0) : 1;
+  const opacity = activeTask?.id === task.id ? (isOverlay ? 0.8 : 0) : 1;
 
   const style = {
     transform: CSS.Transform.toString(transform),

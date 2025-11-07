@@ -56,7 +56,7 @@ export const DbProvider: FC<PropsWithChildren> = ({ children }) => {
   const [db, setDb] = useState<IDBDatabase | null>(null);
 
   useEffect(() => {
-    const dbRequest = indexedDB.open(KANBAN_DB_NAME, 11);
+    const dbRequest = indexedDB.open(KANBAN_DB_NAME, 12);
 
     dbRequest.onupgradeneeded = function () {
       const newDb = this.result;

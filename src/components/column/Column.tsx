@@ -5,13 +5,15 @@ import { Card } from "../card/Card";
 import { getTaskStatusString } from "../../lib/helpers";
 import { useModals } from "../../state/modal-context/ModalProvider";
 import { TaskForm } from "../task-form/TaskForm";
+import { useDroppable } from "@dnd-kit/core";
+import clsx from "clsx";
 
 export interface ColumnProps {
   status: TaskStatus;
   tasks: Task[];
   handleAddNewTask: (newTask: Task) => void;
   handleDeleteTask: (id: number) => void;
-  activeTaskId?: number;
+  activeTask?: Task;
 }
 
 export const Column: FC<ColumnProps> = ({
@@ -19,8 +21,9 @@ export const Column: FC<ColumnProps> = ({
   tasks,
   handleAddNewTask,
   handleDeleteTask,
-  activeTaskId,
+  activeTask,
 }) => {
+  const { setNodeRef } = useDroppable({ id: status });
   const { pushModal } = useModals();
 
   const handleOpenCreateModal: () => void = useCallback(() => {
@@ -32,7 +35,7 @@ export const Column: FC<ColumnProps> = ({
   }, [pushModal, status, handleAddNewTask]);
 
   return (
-    <div className={styles.column}>
+    <div className={clsx(styles.column)} ref={setNodeRef}>
       <div className={styles.column__topRow}>
         <p className="body-lg">{getTaskStatusString(status)}</p>
         <button onClick={handleOpenCreateModal} className={styles.column__addButton}>
@@ -41,7 +44,7 @@ export const Column: FC<ColumnProps> = ({
       </div>
       <div className={styles.column__cardContainer}>
         {tasks.map((task) => (
-          <Card key={task.id} task={task} onDelete={handleDeleteTask} activeTaskId={activeTaskId} />
+          <Card key={task.id} task={task} onDelete={handleDeleteTask} activeTask={activeTask} />
         ))}
       </div>
     </div>
