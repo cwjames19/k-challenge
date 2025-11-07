@@ -1,4 +1,4 @@
-import { useCallback, useState, type FC, type FormEventHandler } from "react";
+import { useCallback, useEffect, useRef, useState, type FC, type FormEventHandler } from "react";
 import styles from "./taskForm.module.css";
 import clsx from "clsx";
 import { useModals } from "../../state/modal-context/ModalProvider";
@@ -17,6 +17,7 @@ export const TaskForm: FC<TaskFormProps> = ({ initialStatus, onSuccess }) => {
   const { popModal } = useModals();
   const { dbReady, createTask } = useDb();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback(
     async (event) => {
@@ -30,22 +31,36 @@ export const TaskForm: FC<TaskFormProps> = ({ initialStatus, onSuccess }) => {
       const title = formData.get(TITLE_NAME);
       const description = formData.get(DESCRIPTION_NAME);
 
-      if (!title || !description || typeof title !== "string" || typeof description !== "string") {
-        setErrorMessage("Please provide a title and a description");
+      if (!title || typeof title !== "string") {
+        setErrorMessage("Please provide a title");
+        return;
+      }
+      if (typeof description !== "string") {
+        setErrorMessage("Invalid description");
         return;
       }
 
-      const newTask = await createTask(title, description, initialStatus);
+      const newTask = await createTask(title, description ?? "", initialStatus);
       onSuccess(newTask);
     },
     [dbReady, initialStatus, createTask, onSuccess]
   );
 
+  useEffect(() => {
+    const titleInput = titleInputRef.current;
+
+    if (titleInput) {
+      titleInput.focus();
+    }
+
+    // would implement a focus trap with more time
+  }, []);
+
   return (
     <form className={styles.form__root} onSubmit={handleSubmit}>
       <label>
         Title
-        <input name={TITLE_NAME} onInput={() => setErrorMessage(null)} />
+        <input name={TITLE_NAME} onInput={() => setErrorMessage(null)} ref={titleInputRef} />
       </label>
       <label>
         Description
